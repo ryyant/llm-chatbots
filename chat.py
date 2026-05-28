@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from providers import create_provider
 from providers.base import BaseProvider
 
@@ -25,3 +27,6 @@ class ChatSession:
 
     def send(self, message: str) -> str:
         return self._provider.send(message)
+
+    def send_stream(self, message: str) -> Iterator[str]:
+        return self._provider.send_stream(message)

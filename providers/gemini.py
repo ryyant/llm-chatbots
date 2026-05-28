@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from google import genai
 from google.genai import types
 
@@ -23,3 +25,17 @@ class GeminiProvider(BaseProvider):
             raise RuntimeError(str(e)) from e
         self.history.append({"role": "assistant", "content": reply})
         return reply
+
+    def send_stream(self, message: str) -> Iterator[str]:
+        self.history.append({"role": "user", "content": message})
+        chunks: list[str] = []
+        try:
+            for chunk in self._chat.send_message_stream(message):
+                text = chunk.text or ""
+                if text:
+                    chunks.append(text)
+                    yield text
+        except Exception as e:
+            self.history.pop()
+            raise RuntimeError(str(e)) from e
+        self.history.append({"role": "assistant", "content": "".join(chunks)})

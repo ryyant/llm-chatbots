@@ -49,12 +49,15 @@ Python 3.10+
 # activate the venv first if not already active
 source venv/bin/activate
 
-python main.py
+python main.py                # CLI mode (default)
+python main.py --mode web     # web UI in your browser (Streamlit)
 ```
+
+### CLI mode
 
 Type your message and press Enter. Use `Ctrl+C` or `Ctrl+D` to quit.
 
-### Switching models at runtime
+Switch models at runtime:
 
 ```
 /model                              # show current provider and model
@@ -64,6 +67,10 @@ Type your message and press Enter. Use `Ctrl+C` or `Ctrl+D` to quit.
 ```
 
 Switching starts a fresh conversation (history is cleared).
+
+### Web mode
+
+`python main.py --mode web` launches a Streamlit app in your browser. The sidebar lets you pick a provider, set the model, edit the system prompt, apply changes, or clear the conversation. Responses stream as they are generated.
 
 ## Running Tests
 
@@ -75,10 +82,12 @@ python -m pytest tests/test_foo.py::test_bar   # run a single test
 ## Project Structure
 
 ```
-main.py                  # REPL entry point; handle_input() for /model command
+main.py                  # entry point; --mode cli|web dispatch
+app.py                   # Streamlit web UI
 chat.py                  # ChatSession: thin wrapper over provider
+config.py                # shared constants (providers, defaults, env var names)
 providers/
-  base.py                # BaseProvider ABC
+  base.py                # BaseProvider ABC (send + send_stream)
   gemini.py              # GeminiProvider
   openai.py              # OpenAIProvider
   anthropic.py           # AnthropicProvider

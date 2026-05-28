@@ -1,21 +1,18 @@
+import argparse
 import os
+import sys
 from typing import NamedTuple, Optional
 from dotenv import load_dotenv
+
 from chat import ChatSession
+from config import (
+    API_KEY_ENV_VARS,
+    DEFAULT_MODELS,
+    DEFAULT_SYSTEM_PROMPT,
+    VALID_PROVIDERS,
+)
 
-VALID_PROVIDERS = {"gemini", "openai", "anthropic"}
-
-DEFAULT_MODELS = {
-    "gemini": "gemini-2.5-flash",
-    "openai": "gpt-4o",
-    "anthropic": "claude-opus-4-7",
-}
-
-API_KEY_ENV_VARS = {
-    "gemini": "GEMINI_API_KEY",
-    "openai": "OPENAI_API_KEY",
-    "anthropic": "ANTHROPIC_API_KEY",
-}
+_VALID_PROVIDERS_SET = set(VALID_PROVIDERS)
 
 
 class HandleResult(NamedTuple):
@@ -48,9 +45,9 @@ def handle_input(
         provider = provider.strip().lower()
         model = model.strip()
 
-        if provider not in VALID_PROVIDERS:
+        if provider not in _VALID_PROVIDERS_SET:
             return HandleResult(
-                output=f"Unknown provider: {provider!r}. Choose from: {', '.join(sorted(VALID_PROVIDERS))}",
+                output=f"Unknown provider: {provider!r}. Choose from: {', '.join(sorted(_VALID_PROVIDERS_SET))}",
                 new_session=None,
             )
 
@@ -85,14 +82,12 @@ def handle_input(
         return HandleResult(output=f"Error: {e}", new_session=None)
 
 
-def main():
-    load_dotenv()
-
+def run_cli() -> None:
     api_keys = {name: os.environ.get(env, "") for name, env in API_KEY_ENV_VARS.items()}
 
     provider = os.environ.get("PROVIDER", "gemini").lower()
-    if provider not in VALID_PROVIDERS:
-        print(f"Error: PROVIDER={provider!r} is not supported. Choose from: {', '.join(sorted(VALID_PROVIDERS))}")
+    if provider not in _VALID_PROVIDERS_SET:
+        print(f"Error: PROVIDER={provider!r} is not supported. Choose from: {', '.join(sorted(_VALID_PROVIDERS_SET))}")
         return
 
     api_key = api_keys.get(provider, "")
@@ -101,7 +96,7 @@ def main():
         return
 
     model = os.environ.get("MODEL") or DEFAULT_MODELS[provider]
-    system_prompt = os.environ.get("SYSTEM_PROMPT", "You are a helpful assistant.")
+    system_prompt = os.environ.get("SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
 
     session = ChatSession(
         api_key=api_key,
@@ -138,6 +133,33 @@ def main():
             print(f"{result.output}\n")
         else:
             print(f"AI: {result.output}\n")
+
+
+def run_web() -> None:
+    app_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app.py")
+    try:
+        os.execvp("streamlit", ["streamlit", "run", app_path])
+    except FileNotFoundError:
+        print("Error: 'streamlit' is not installed. Run: pip install -r requirements.txt")
+        sys.exit(1)
+
+
+def main():
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(description="LLM chat in CLI or web mode.")
+    parser.add_argument(
+        "--mode",
+        choices=("cli", "web"),
+        default="cli",
+        help="Interface mode: 'cli' (default) for terminal REPL, 'web' for Streamlit UI.",
+    )
+    args = parser.parse_args()
+
+    if args.mode == "web":
+        run_web()
+    else:
+        run_cli()
 
 
 if __name__ == "__main__":
