@@ -72,6 +72,15 @@ Switching starts a fresh conversation (history is cleared).
 
 `python main.py --mode web` launches a Streamlit app in your browser. The sidebar lets you pick a provider, set the model, edit the system prompt, apply changes, or clear the conversation. Responses stream as they are generated.
 
+#### Document uploads (web only)
+
+Attach `.pdf`, `.txt`, or `.md` files from the sidebar to ask questions about them. Documents are chunked and embedded locally (in memory) using Gemini's `text-embedding-004`; on each message, the top excerpts most relevant to your question are retrieved and sent along with it.
+
+- Requires `GEMINI_API_KEY` in `.env` for embeddings, regardless of which chat provider you're using.
+- Uncheck **"Use uploaded documents in answers"** to skip retrieval without removing the indexed files.
+- Click ✕ next to a filename to remove it from the index.
+- Indexed documents do not persist across app restarts.
+
 ## Running Tests
 
 ```bash
@@ -85,7 +94,8 @@ python -m pytest tests/test_foo.py::test_bar   # run a single test
 main.py                  # entry point; --mode cli|web dispatch
 app.py                   # Streamlit web UI
 chat.py                  # ChatSession: thin wrapper over provider
-config.py                # shared constants (providers, defaults, env var names)
+config.py                # shared constants (providers, defaults, RAG knobs)
+rag.py                   # file extraction, chunking, embeddings, retrieval
 providers/
   base.py                # BaseProvider ABC (send + send_stream)
   gemini.py              # GeminiProvider
@@ -95,5 +105,6 @@ providers/
 tests/
   test_chat.py
   test_main.py
+  test_rag.py
   test_providers_*.py
 ```

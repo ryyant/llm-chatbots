@@ -13,3 +13,9 @@ API_KEY_ENV_VARS = {
 }
 
 DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant."
+
+RAG_CHUNK_CHARS = 2000
+RAG_OVERLAP_CHARS = 200
+RAG_TOP_K = 4
+RAG_EMBEDDING_MODEL = "text-embedding-004"
+SUPPORTED_UPLOAD_EXTENSIONS = (".pdf", ".txt", ".md")
