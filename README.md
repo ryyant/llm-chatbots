@@ -1,6 +1,6 @@
 # llm-chatbots
 
-A command-line AI chat program in Python supporting multiple LLM providers with runtime model switching.
+A Python chat program supporting multiple LLM providers (Google Gemini, OpenAI, Anthropic) with runtime model switching, streaming responses, and a web UI that supports document uploads (PDF/txt/md) with retrieval-augmented question answering.
 
 ## Supported Providers
 
@@ -74,12 +74,13 @@ Switching starts a fresh conversation (history is cleared).
 
 #### Document uploads (web only)
 
-Attach `.pdf`, `.txt`, or `.md` files from the sidebar to ask questions about them. Documents are chunked and embedded locally (in memory) using Gemini's `text-embedding-004`; on each message, the top excerpts most relevant to your question are retrieved and sent along with it.
+Attach `.pdf`, `.txt`, or `.md` files from the sidebar to ask questions about them. Documents are chunked and embedded in memory using Gemini's `gemini-embedding-001`; on each message, the top excerpts most relevant to your question are retrieved and sent along with it.
 
 - Requires `GEMINI_API_KEY` in `.env` for embeddings, regardless of which chat provider you're using.
 - Uncheck **"Use uploaded documents in answers"** to skip retrieval without removing the indexed files.
 - Click ✕ next to a filename to remove it from the index.
 - Indexed documents do not persist across app restarts.
+- Removing a file or unchecking the box after the model has already answered with documents will clear the conversation, so the model can't continue referencing them from earlier turns. A toast notifies you when this happens.
 
 ## Running Tests
 
