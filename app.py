@@ -62,6 +62,10 @@ def _init_state() -> None:
         st.session_state.index_keys = set()
     if "use_docs" not in st.session_state:
         st.session_state.use_docs = True
+    if "use_docs_prev" not in st.session_state:
+        st.session_state.use_docs_prev = st.session_state.use_docs
+    if "docs_used_in_session" not in st.session_state:
+        st.session_state.docs_used_in_session = False
 
 
 _init_state()
@@ -107,6 +111,31 @@ def _ingest_uploads(uploaded_files) -> None:
 def _remove_file_from_index(filename: str) -> None:
     st.session_state.index = [c for c in st.session_state.index if c.filename != filename]
     st.session_state.index_keys = {k for k in st.session_state.index_keys if k[0] != filename}
+
+
+def _rebuild_for_doc_change(reason: str) -> None:
+    """Reset the provider session so prior augmented messages don't linger in history.
+    No-op if docs haven't been used yet in this session."""
+    if st.session_state.session is None:
+        return
+    if not st.session_state.docs_used_in_session:
+        return
+    st.session_state.session = _build_session(
+        st.session_state.provider,
+        st.session_state.model,
+        st.session_state.system_prompt,
+    )
+    st.session_state.display_messages = []
+    st.session_state.docs_used_in_session = False
+    st.toast(f"Conversation cleared: {reason}")
+
+
+def _on_use_docs_change() -> None:
+    prev = st.session_state.use_docs_prev
+    new = st.session_state.use_docs
+    if prev and not new:
+        _rebuild_for_doc_change("documents disabled")
+    st.session_state.use_docs_prev = new
 
 
 with st.sidebar:
@@ -155,6 +184,7 @@ with st.sidebar:
             st.session_state.model = model
             st.session_state.system_prompt = system_prompt
             st.session_state.display_messages = []
+            st.session_state.docs_used_in_session = False
             st.toast(f"Switched to {provider}/{model}")
         except Exception as e:
             st.error(f"Failed to switch: {e}")
@@ -166,6 +196,7 @@ with st.sidebar:
             st.session_state.system_prompt,
         )
         st.session_state.display_messages = []
+        st.session_state.docs_used_in_session = False
         st.toast("Conversation cleared")
 
     if st.session_state.session is not None:
@@ -201,6 +232,7 @@ with st.sidebar:
             with col_remove:
                 if st.button("✕", key=f"rm_{fname}", help=f"Remove {fname}"):
                     _remove_file_from_index(fname)
+                    _rebuild_for_doc_change("documents changed")
                     st.rerun()
         st.caption(
             f"Indexed {len(st.session_state.index)} chunks across {len(filenames)} file(s)"
@@ -208,9 +240,9 @@ with st.sidebar:
 
     st.checkbox(
         "Use uploaded documents in answers",
-        value=st.session_state.use_docs,
         key="use_docs",
         disabled=not st.session_state.index,
+        on_change=_on_use_docs_change,
         help="When checked, relevant excerpts are retrieved and included with each question.",
     )
 
@@ -241,7 +273,9 @@ else:
                     api_key=_gemini_key(),
                     top_k=RAG_TOP_K,
                 )
-                payload = rag.build_context_prompt(top_chunks, user_input)
+                if top_chunks:
+                    payload = rag.build_context_prompt(top_chunks, user_input)
+                    st.session_state.docs_used_in_session = True
             except Exception as e:
                 st.warning(f"Retrieval failed, sending without context: {e}")
 
