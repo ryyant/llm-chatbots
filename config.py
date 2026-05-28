@@ -1,7 +1,7 @@
 VALID_PROVIDERS = ("gemini", "openai", "anthropic")
 
 DEFAULT_MODELS = {
-    "gemini": "gemini-2.5-flash",
+    "gemini": "gemini-3.1-flash-lite",
     "openai": "gpt-4o",
     "anthropic": "claude-opus-4-7",
 }

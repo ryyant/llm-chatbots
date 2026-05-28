@@ -6,7 +6,7 @@ A Python chat program supporting multiple LLM providers (Google Gemini, OpenAI, 
 
 | Provider | Models | Free tier |
 |----------|--------|-----------|
-| Google Gemini | `gemini-2.5-flash`, `gemini-2.0-flash`, ... | [aistudio.google.com](https://aistudio.google.com) |
+| Google Gemini | `gemini-3.1-flash-lite`, `gemini-2.5-flash`, ... | [aistudio.google.com](https://aistudio.google.com) |
 | OpenAI | `gpt-4o`, `gpt-4o-mini`, ... | [platform.openai.com](https://platform.openai.com) |
 | Anthropic | `claude-opus-4-7`, `claude-sonnet-4-6`, ... | [console.anthropic.com](https://console.anthropic.com) |
 
