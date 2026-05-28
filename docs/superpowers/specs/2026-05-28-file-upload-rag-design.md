@@ -5,7 +5,7 @@
 
 ## Overview
 
-Add file uploads to the Streamlit web UI so the user can attach PDFs, plain text, and Markdown files, then ask questions about them. Uses naive retrieval-augmented generation: documents are chunked, embedded (Gemini `text-embedding-004`), and stored in memory. For each user message, the top-k most similar chunks are retrieved and prepended as context. A sidebar checkbox lets the user disable retrieval without removing the indexed documents.
+Add file uploads to the Streamlit web UI so the user can attach PDFs, plain text, and Markdown files, then ask questions about them. Uses naive retrieval-augmented generation: documents are chunked, embedded (Gemini `gemini-embedding-001`), and stored in memory. For each user message, the top-k most similar chunks are retrieved and prepended as context. A sidebar checkbox lets the user disable retrieval without removing the indexed documents.
 
 CLI mode is unaffected.
 
@@ -27,7 +27,7 @@ Self-contained module, no Streamlit dependency. Public functions:
   - Drops empty chunks.
 
 - `embed(texts: list[str], api_key: str) -> list[list[float]]`
-  - Batch call to `genai.Client(api_key).models.embed_content(model="text-embedding-004", contents=texts)`.
+  - Batch call to `genai.Client(api_key).models.embed_content(model="gemini-embedding-001", contents=texts)`.
   - Returns one vector per input string.
 
 - `retrieve(query: str, index: list[Chunk], api_key: str, top_k: int = 4) -> list[Chunk]`
@@ -60,7 +60,7 @@ Add RAG knobs:
 RAG_CHUNK_CHARS = 2000
 RAG_OVERLAP_CHARS = 200
 RAG_TOP_K = 4
-RAG_EMBEDDING_MODEL = "text-embedding-004"
+RAG_EMBEDDING_MODEL = "gemini-embedding-001"
 SUPPORTED_UPLOAD_EXTENSIONS = (".pdf", ".txt", ".md")
 ```
 
